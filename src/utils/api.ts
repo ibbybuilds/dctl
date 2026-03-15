@@ -1,7 +1,24 @@
 const BASE = 'https://discord.com/api/v10';
 
 export const PERMISSION: Record<string, bigint> = {
+  // General
+  administrator: 1n << 3n,
+  view_audit_log: 1n << 7n,
+  manage_server: 1n << 5n,
+  manage_roles: 1n << 28n,
+  manage_channels: 1n << 4n,
+  kick_members: 1n << 1n,
+  ban_members: 1n << 2n,
+  create_invite: 1n << 0n,
+  change_nickname: 1n << 26n,
+  manage_nicknames: 1n << 27n,
+  manage_expressions: 1n << 30n,
+  manage_webhooks: 1n << 29n,
   view_channel: 1n << 10n,
+  manage_events: 1n << 33n,
+  moderate_members: 1n << 40n,
+
+  // Text
   send_messages: 1n << 11n,
   send_messages_in_threads: 1n << 38n,
   create_public_threads: 1n << 35n,
@@ -13,14 +30,18 @@ export const PERMISSION: Record<string, bigint> = {
   read_message_history: 1n << 16n,
   mention_everyone: 1n << 17n,
   manage_messages: 1n << 13n,
-  manage_channels: 1n << 4n,
-  manage_roles: 1n << 28n,
+  manage_threads: 1n << 34n,
+  use_slash_commands: 1n << 31n,
+
+  // Voice
   connect: 1n << 20n,
   speak: 1n << 21n,
+  video: 1n << 9n,
   mute_members: 1n << 22n,
   deafen_members: 1n << 23n,
   move_members: 1n << 24n,
   use_voice_activity: 1n << 25n,
+  priority_speaker: 1n << 8n,
 };
 
 export const CHANNEL_TYPE: Record<string, number> = {
