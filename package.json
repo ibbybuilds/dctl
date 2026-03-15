@@ -4,7 +4,7 @@
   "description": "discli — Discord server management CLI. Control your servers from the terminal. Built for humans and AI agents.",
   "type": "module",
   "bin": {
-    "discli": "./dist/cli.js"
+    "discli": "dist/cli.js"
   },
   "files": [
     "dist",
@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ibbybuilds/discli"
+    "url": "git+https://github.com/ibbybuilds/discli.git"
   },
   "scripts": {
     "build": "tsup",
