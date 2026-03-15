@@ -27,6 +27,15 @@ discli init --token <token>           # First-time setup
 discli server list                    # List servers
 discli server select <id>             # Set default server
 discli server info                    # Server overview
+discli server set --name "X"         # Change server name
+discli server set --description "X"  # Set description
+discli server set --verification medium  # Verification level
+discli server set --notifications only_mentions  # Notification default
+
+discli invite list                    # List all invites
+discli invite create <channel>        # Create invite
+discli invite create <ch> --max-age 3600 --max-uses 10  # With limits
+discli invite delete <code> --confirm # Delete invite
 
 discli channel list                   # List channels
 discli channel create <name>          # Create channel (--type, --category, --topic)

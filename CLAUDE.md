@@ -17,7 +17,8 @@ src/
   cli.ts              # Entry point, registers all command groups
   commands/
     init.ts            # discli init
-    server.ts          # discli server {list, select, info}
+    server.ts          # discli server {list, select, info, set}
+    invite.ts          # discli invite {list, create, delete}
     channel.ts         # discli channel {list, create, delete, rename, topic, move}
     role.ts            # discli role {list, create, delete, assign, remove}
     member.ts          # discli member {list, info, kick, ban, nick}

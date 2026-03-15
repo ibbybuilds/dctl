@@ -90,6 +90,27 @@ export class DiscordAPI {
     return (await this.request('GET', `/guilds/${guildId}?with_counts=true`)) as GuildFull;
   }
 
+  async modifyGuild(guildId: string, data: Record<string, unknown>): Promise<GuildFull> {
+    return (await this.request('PATCH', `/guilds/${guildId}`, data)) as GuildFull;
+  }
+
+  // ── Invites ──
+
+  async getGuildInvites(guildId: string): Promise<Invite[]> {
+    return (await this.request('GET', `/guilds/${guildId}/invites`)) as Invite[];
+  }
+
+  async createChannelInvite(
+    channelId: string,
+    opts?: { max_age?: number; max_uses?: number; temporary?: boolean; unique?: boolean }
+  ): Promise<Invite> {
+    return (await this.request('POST', `/channels/${channelId}/invites`, opts ?? {})) as Invite;
+  }
+
+  async deleteInvite(code: string): Promise<void> {
+    await this.request('DELETE', `/invites/${code}`);
+  }
+
   // ── Audit Log ──
 
   async getAuditLog(
@@ -344,6 +365,17 @@ export interface Message {
     bot?: boolean;
   };
   embeds?: Embed[];
+}
+
+export interface Invite {
+  code: string;
+  channel: { id: string; name: string } | null;
+  inviter?: { id: string; username: string };
+  uses: number;
+  max_uses: number;
+  max_age: number;
+  temporary: boolean;
+  created_at: string;
 }
 
 export interface AuditLogEntry {

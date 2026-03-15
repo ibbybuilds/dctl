@@ -71,6 +71,21 @@ discli server info
 discli server list              # List servers the bot is in
 discli server select <id>       # Set default server
 discli server info              # Server overview
+discli server set --name "X"   # Change server name
+discli server set --description "X"  # Set description
+discli server set --verification medium  # Set verification level
+discli server set --notifications only_mentions  # Default notifications
+discli server set --content-filter all_members   # Content filter
+```
+
+### Invites
+
+```bash
+discli invite list                         # List all invites
+discli invite create <channel>             # Create invite (never expires)
+discli invite create <ch> --max-age 3600   # Expire after 1 hour
+discli invite create <ch> --max-uses 10    # Max 10 uses
+discli invite delete <code> --confirm      # Delete invite
 ```
 
 ### Channels
