@@ -197,21 +197,28 @@ discli is designed for AI agents like [AIOS Companion](https://aioscompanion.com
 | 📐 SCHEMA.md | Documents output shapes for predictable parsing |
 | ⚡ No MCP overhead | Zero token cost at session start |
 
-### Setup for Claude Code / Cursor
+### Install the CLI
 
 ```bash
-# Install discli globally
+# Install globally
 npm install -g @ibbybuilds/discli
 
-# Or use npx (no install needed)
+# Or run directly (no install needed)
 npx @ibbybuilds/discli channel list
-
-# Install the skill file for your agent
-mkdir -p ~/.claude/skills/discli
-cp node_modules/discli/skills/SKILL.md ~/.claude/skills/discli/SKILL.md
-
-# Done. Your agent can now use discli.
 ```
+
+### Install the skill
+
+```bash
+# Option 1: via npx skills (if you have skills.sh)
+npx skills add ibbybuilds/discli
+
+# Option 2: copy from GitHub (works everywhere)
+mkdir -p ~/.claude/skills/discli
+curl -o ~/.claude/skills/discli/SKILL.md https://raw.githubusercontent.com/ibbybuilds/discli/master/skills/SKILL.md
+```
+
+> Example shown for Claude Code. Replace `~/.claude/skills/` with your agent's skill directory.
 
 ### Example: agent sets up an entire server
 
