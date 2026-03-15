@@ -1,8 +1,23 @@
 import { Command } from 'commander';
-import { DiscordAPI } from '../utils/api.js';
+import { DiscordAPI, PERMISSION } from '../utils/api.js';
 import { requireToken, requireServer } from '../utils/config.js';
 import { printResult, resolveFormat } from '../utils/output.js';
 import { resolveRole, resolveMember } from '../utils/resolve.js';
+
+function parsePermissions(perms: string): bigint {
+  let bits = 0n;
+  for (const p of perms.split(',')) {
+    const name = p.trim().toLowerCase();
+    const val = PERMISSION[name];
+    if (val === undefined) {
+      console.error(`Unknown permission: ${name}`);
+      console.error(`Available: ${Object.keys(PERMISSION).join(', ')}`);
+      process.exit(2);
+    }
+    bits |= val;
+  }
+  return bits;
+}
 
 export function registerRole(program: Command): void {
   const role = program
@@ -44,7 +59,9 @@ export function registerRole(program: Command): void {
     .description('Create a new role')
     .argument('<name>', 'Role name')
     .option('--color <hex>', 'Color hex (e.g. #ff5733)')
+    .option('--permissions <perms>', 'Comma-separated permissions (e.g. send_messages,view_channel)')
     .option('--mentionable', 'Allow anyone to mention this role')
+    .option('--hoist', 'Show role separately in member list')
     .option('--dry-run', 'Show what would be created')
     .action(async (name: string, opts) => {
       const fmt = resolveFormat(program.opts().format);
@@ -55,8 +72,14 @@ export function registerRole(program: Command): void {
       if (opts.color) {
         data.color = parseInt(opts.color.replace('#', ''), 16);
       }
+      if (opts.permissions) {
+        data.permissions = parsePermissions(opts.permissions).toString();
+      }
       if (opts.mentionable) {
         data.mentionable = true;
+      }
+      if (opts.hoist) {
+        data.hoist = true;
       }
 
       if (opts.dryRun) {
