@@ -137,6 +137,14 @@ export class DiscordAPI {
     return (await this.request('POST', `/guilds/${guildId}/roles`, data)) as Role;
   }
 
+  async modifyRole(guildId: string, roleId: string, data: Record<string, unknown>): Promise<Role> {
+    return (await this.request('PATCH', `/guilds/${guildId}/roles/${roleId}`, data)) as Role;
+  }
+
+  async reorderRoles(guildId: string, positions: { id: string; position: number }[]): Promise<Role[]> {
+    return (await this.request('PATCH', `/guilds/${guildId}/roles`, positions)) as Role[];
+  }
+
   async deleteRole(guildId: string, roleId: string): Promise<void> {
     await this.request('DELETE', `/guilds/${guildId}/roles/${roleId}`);
   }
