@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { DiscordAPI } from '../utils/api.js';
 import { requireToken, requireServer } from '../utils/config.js';
-import { printResult } from '../utils/output.js';
+import { printResult, resolveFormat } from '../utils/output.js';
 import { resolveMember } from '../utils/resolve.js';
 
 export function registerMember(program: Command): void {
@@ -12,9 +12,9 @@ export function registerMember(program: Command): void {
   member
     .command('list')
     .description('List server members')
-    .option('--limit <n>', 'Max members to show', '100')
+    .option('-n, --limit <n>', 'Max members to show', '100')
     .action(async (opts) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const members = await api.listMembers(guildId, parseInt(opts.limit));
@@ -42,7 +42,7 @@ export function registerMember(program: Command): void {
     .description('Show member details')
     .argument('<user>', 'Username or ID')
     .action(async (userName: string) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const m = await resolveMember(api, guildId, userName);
@@ -117,7 +117,7 @@ export function registerMember(program: Command): void {
     .argument('<user>', 'Username or ID')
     .argument('<nickname>', 'New nickname')
     .action(async (userName: string, nickname: string) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const m = await resolveMember(api, guildId, userName);

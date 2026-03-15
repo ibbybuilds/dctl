@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { DiscordAPI } from '../utils/api.js';
 import { requireToken, requireServer, setDefaultServer } from '../utils/config.js';
-import { printResult } from '../utils/output.js';
+import { printResult, resolveFormat } from '../utils/output.js';
 
 export function registerServer(program: Command): void {
   const server = program
@@ -12,7 +12,7 @@ export function registerServer(program: Command): void {
     .command('list')
     .description('List all servers the bot is in')
     .action(async () => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guilds = await api.listGuilds();
 
@@ -46,7 +46,7 @@ export function registerServer(program: Command): void {
     .command('info')
     .description('Show server details')
     .action(async () => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const guild = await api.getGuild(guildId);

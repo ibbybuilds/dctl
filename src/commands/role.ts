@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { DiscordAPI } from '../utils/api.js';
 import { requireToken, requireServer } from '../utils/config.js';
-import { printResult } from '../utils/output.js';
+import { printResult, resolveFormat } from '../utils/output.js';
 import { resolveRole, resolveMember } from '../utils/resolve.js';
 
 export function registerRole(program: Command): void {
@@ -12,26 +12,27 @@ export function registerRole(program: Command): void {
   role
     .command('list')
     .description('List all roles')
-    .action(async () => {
-      const fmt = program.opts().format;
+    .option('-n <count>', 'Limit number of roles shown', parseInt)
+    .action(async (opts) => {
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const roles = await api.listRoles(guildId);
 
+      const sorted = roles.sort((a, b) => b.position - a.position).slice(0, opts.n ?? roles.length);
+
       if (fmt === 'json') {
-        printResult(roles, fmt);
+        printResult(sorted, fmt);
         return;
       }
 
-      const rows = roles
-        .sort((a, b) => b.position - a.position)
-        .map((r) => ({
-          name: r.name,
-          id: r.id,
-          color: r.color ? `#${r.color.toString(16).padStart(6, '0')}` : '(none)',
-          managed: r.managed ? 'bot' : '',
-          position: r.position,
-        }));
+      const rows = sorted.map((r) => ({
+        name: r.name,
+        id: r.id,
+        color: r.color ? `#${r.color.toString(16).padStart(6, '0')}` : '(none)',
+        managed: r.managed ? 'bot' : '',
+        position: r.position,
+      }));
 
       console.log('\nRoles');
       console.log('─────');
@@ -46,7 +47,7 @@ export function registerRole(program: Command): void {
     .option('--mentionable', 'Allow anyone to mention this role')
     .option('--dry-run', 'Show what would be created')
     .action(async (name: string, opts) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
 

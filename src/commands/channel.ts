@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { DiscordAPI, CHANNEL_TYPE, CHANNEL_TYPE_NAME } from '../utils/api.js';
 import { requireToken, requireServer } from '../utils/config.js';
-import { printResult } from '../utils/output.js';
+import { printResult, resolveFormat } from '../utils/output.js';
 import { resolveChannel, resolveCategory } from '../utils/resolve.js';
 
 export function registerChannel(program: Command): void {
@@ -12,11 +12,13 @@ export function registerChannel(program: Command): void {
   channel
     .command('list')
     .description('List all channels grouped by category')
-    .action(async () => {
-      const fmt = program.opts().format;
+    .option('-n <count>', 'Limit number of channels shown', parseInt)
+    .action(async (opts) => {
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
-      const channels = await api.listChannels(guildId);
+      let channels = await api.listChannels(guildId);
+      if (opts.n) channels = channels.slice(0, opts.n);
 
       if (fmt === 'json') {
         printResult(channels, fmt);
@@ -63,7 +65,7 @@ export function registerChannel(program: Command): void {
     .option('--topic <topic>', 'Channel topic')
     .option('--dry-run', 'Show what would be created without creating it')
     .action(async (name: string, opts) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
 
@@ -125,7 +127,7 @@ export function registerChannel(program: Command): void {
     .argument('<new-name>', 'New channel name')
     .option('--dry-run', 'Show what would change')
     .action(async (channelName: string, newName: string, opts) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const ch = await resolveChannel(api, guildId, channelName);
@@ -145,7 +147,7 @@ export function registerChannel(program: Command): void {
     .argument('<channel>', 'Channel name or ID')
     .argument('<topic>', 'New topic text')
     .action(async (channelName: string, topic: string) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const ch = await resolveChannel(api, guildId, channelName);
@@ -165,7 +167,7 @@ export function registerChannel(program: Command): void {
     .option('--category <name>', 'Target category name or ID')
     .option('--position <n>', 'Position within category', parseInt)
     .action(async (channelName: string, opts) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const ch = await resolveChannel(api, guildId, channelName);

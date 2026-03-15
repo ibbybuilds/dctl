@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { DiscordAPI, PERMISSION } from '../utils/api.js';
 import { requireToken, requireServer } from '../utils/config.js';
-import { printResult } from '../utils/output.js';
+import { printResult, resolveFormat } from '../utils/output.js';
 import { resolveChannel, resolveRole } from '../utils/resolve.js';
 
 function parsePermissions(perms: string): bigint {
@@ -38,7 +38,7 @@ export function registerPermission(program: Command): void {
     .description('View permission overwrites for a channel')
     .argument('<channel>', 'Channel name or ID')
     .action(async (channelName: string) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const ch = await resolveChannel(api, guildId, channelName);
@@ -84,7 +84,7 @@ export function registerPermission(program: Command): void {
     .option('--deny <perms>', 'Comma-separated permissions to deny')
     .option('--dry-run', 'Show what would change')
     .action(async (channelName: string, roleName: string, opts) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const ch = await resolveChannel(api, guildId, channelName);
@@ -131,7 +131,7 @@ export function registerPermission(program: Command): void {
     .argument('<channel>', 'Channel name or ID')
     .option('--dry-run', 'Show what would change')
     .action(async (channelName: string, opts) => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const ch = await resolveChannel(api, guildId, channelName);
@@ -172,7 +172,7 @@ export function registerPermission(program: Command): void {
     .command('list')
     .description('List all available permission names')
     .action(() => {
-      const fmt = program.opts().format;
+      const fmt = resolveFormat(program.opts().format);
       if (fmt === 'json') {
         const perms = Object.entries(PERMISSION).map(([name, val]) => ({ name, bit: val.toString() }));
         printResult(perms, fmt);
