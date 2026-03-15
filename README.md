@@ -1,6 +1,10 @@
-# discli
+<p align="center">
+  <img src="assets/banner.png" alt="discli — Discord Server Management CLI" width="100%">
+</p>
 
-**Discord server management CLI — built for AI agents and humans.**
+<p align="center">
+  <strong>Discord server management CLI — built for AI agents and humans.</strong>
+</p>
 
 Create channels, manage roles, set permissions, and control your Discord servers entirely from the terminal. No bot server needed. No dashboard clicking. Just commands.
 
