@@ -1,5 +1,11 @@
+export function resolveFormat(explicit: string): string {
+  if (explicit !== 'auto') return explicit;
+  return process.stdout.isTTY ? 'table' : 'json';
+}
+
 export function printResult(data: unknown, format: string): void {
-  if (format === 'json') {
+  const fmt = resolveFormat(format);
+  if (fmt === 'json') {
     console.log(JSON.stringify(data, null, 2));
     return;
   }

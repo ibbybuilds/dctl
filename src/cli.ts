@@ -12,7 +12,7 @@ program
   .name('dctl')
   .description('Discord server management CLI — control your servers from the terminal')
   .version('0.1.0')
-  .option('--format <fmt>', 'Output format: json, table', 'table')
+  .option('--format <fmt>', 'Output format: json, table, auto (auto = json when piped, table in terminal)', 'auto')
   .option('--server <id>', 'Server ID override');
 
 registerInit(program);
