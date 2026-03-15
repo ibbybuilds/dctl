@@ -105,8 +105,8 @@ export class DiscordAPI {
 
   // ── Messages ──
 
-  async sendMessage(channelId: string, content: string): Promise<Message> {
-    return (await this.request('POST', `/channels/${channelId}/messages`, { content })) as Message;
+  async sendMessage(channelId: string, data: MessagePayload): Promise<Message> {
+    return (await this.request('POST', `/channels/${channelId}/messages`, data)) as Message;
   }
 
   async getMessages(channelId: string, limit = 50, before?: string): Promise<Message[]> {
@@ -119,8 +119,33 @@ export class DiscordAPI {
     return (await this.request('GET', `/channels/${channelId}/messages/${messageId}`)) as Message;
   }
 
-  async editMessage(channelId: string, messageId: string, content: string): Promise<Message> {
-    return (await this.request('PATCH', `/channels/${channelId}/messages/${messageId}`, { content })) as Message;
+  async editMessage(channelId: string, messageId: string, data: MessagePayload): Promise<Message> {
+    return (await this.request('PATCH', `/channels/${channelId}/messages/${messageId}`, data)) as Message;
+  }
+
+  // ── Reactions ──
+
+  async addReaction(channelId: string, messageId: string, emoji: string): Promise<void> {
+    const encoded = encodeURIComponent(emoji);
+    await this.request('PUT', `/channels/${channelId}/messages/${messageId}/reactions/${encoded}/@me`);
+  }
+
+  async removeReaction(channelId: string, messageId: string, emoji: string): Promise<void> {
+    const encoded = encodeURIComponent(emoji);
+    await this.request('DELETE', `/channels/${channelId}/messages/${messageId}/reactions/${encoded}/@me`);
+  }
+
+  // ── Threads ──
+
+  async createThread(channelId: string, name: string, messageId?: string): Promise<Channel> {
+    if (messageId) {
+      return (await this.request('POST', `/channels/${channelId}/messages/${messageId}/threads`, {
+        name, auto_archive_duration: 1440
+      })) as Channel;
+    }
+    return (await this.request('POST', `/channels/${channelId}/threads`, {
+      name, type: 11, auto_archive_duration: 1440
+    })) as Channel;
   }
 
   async deleteMessage(channelId: string, messageId: string): Promise<void> {
@@ -272,6 +297,25 @@ export interface Member {
   joined_at: string;
 }
 
+export interface Embed {
+  title?: string;
+  description?: string;
+  url?: string;
+  color?: number;
+  timestamp?: string;
+  footer?: { text: string; icon_url?: string };
+  image?: { url: string };
+  thumbnail?: { url: string };
+  author?: { name: string; url?: string; icon_url?: string };
+  fields?: { name: string; value: string; inline?: boolean }[];
+}
+
+export interface MessagePayload {
+  content?: string;
+  embeds?: Embed[];
+  message_reference?: { message_id: string };
+}
+
 export interface Message {
   id: string;
   channel_id: string;
@@ -284,4 +328,5 @@ export interface Message {
     username: string;
     bot?: boolean;
   };
+  embeds?: Embed[];
 }

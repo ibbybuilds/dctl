@@ -1,8 +1,13 @@
 import { Command } from 'commander';
 import { DiscordAPI } from '../utils/api.js';
+import type { Embed, MessagePayload } from '../utils/api.js';
 import { requireToken, requireServer } from '../utils/config.js';
 import { printResult, resolveFormat } from '../utils/output.js';
 import { resolveChannel } from '../utils/resolve.js';
+
+function parseColor(color: string): number {
+  return parseInt(color.replace('#', ''), 16);
+}
 
 export function registerMessage(program: Command): void {
   const message = program
@@ -14,18 +19,82 @@ export function registerMessage(program: Command): void {
     .command('send')
     .description('Send a message to a channel')
     .argument('<channel>', 'Channel name or ID')
-    .argument('<text>', 'Message content')
-    .action(async (channelName: string, text: string) => {
+    .argument('<text>', 'Message content (supports Discord markdown)')
+    .option('--reply <id>', 'Reply to a message ID')
+    .action(async (channelName: string, text: string, opts) => {
       const fmt = resolveFormat(program.opts().format);
       const api = new DiscordAPI(requireToken());
       const guildId = requireServer(program.opts().server);
       const ch = await resolveChannel(api, guildId, channelName);
 
-      const msg = await api.sendMessage(ch.id, text);
+      const payload: MessagePayload = { content: text };
+      if (opts.reply) {
+        payload.message_reference = { message_id: opts.reply };
+      }
+
+      const msg = await api.sendMessage(ch.id, payload);
       if (fmt !== 'table') {
         printResult(msg, fmt);
       } else {
         console.log(`Sent message to #${ch.name} (${msg.id})`);
+      }
+    });
+
+  message
+    .command('embed')
+    .description('Send an embed (rich card) to a channel')
+    .argument('<channel>', 'Channel name or ID')
+    .option('--title <text>', 'Embed title')
+    .option('--description <text>', 'Embed description (supports markdown)')
+    .option('--color <hex>', 'Embed color (e.g. #5865F2)')
+    .option('--url <url>', 'Title link URL')
+    .option('--image <url>', 'Large image URL')
+    .option('--thumbnail <url>', 'Small thumbnail URL')
+    .option('--footer <text>', 'Footer text')
+    .option('--author <name>', 'Author name')
+    .option('--field <value...>', 'Add field: "Name|Value" or "Name|Value|inline"')
+    .option('--content <text>', 'Text content above the embed')
+    .option('--reply <id>', 'Reply to a message ID')
+    .action(async (channelName: string, opts) => {
+      const fmt = resolveFormat(program.opts().format);
+      const api = new DiscordAPI(requireToken());
+      const guildId = requireServer(program.opts().server);
+      const ch = await resolveChannel(api, guildId, channelName);
+
+      const embed: Embed = {};
+      if (opts.title) embed.title = opts.title;
+      if (opts.description) embed.description = opts.description;
+      if (opts.color) embed.color = parseColor(opts.color);
+      if (opts.url) embed.url = opts.url;
+      if (opts.image) embed.image = { url: opts.image };
+      if (opts.thumbnail) embed.thumbnail = { url: opts.thumbnail };
+      if (opts.footer) embed.footer = { text: opts.footer };
+      if (opts.author) embed.author = { name: opts.author };
+      if (opts.field) {
+        embed.fields = (opts.field as string[]).map((f: string) => {
+          const parts = f.split('|');
+          return {
+            name: parts[0],
+            value: parts[1] || '',
+            inline: parts[2] === 'inline',
+          };
+        });
+      }
+
+      if (!embed.title && !embed.description) {
+        console.error('Provide at least --title or --description for the embed.');
+        process.exit(2);
+      }
+
+      const payload: MessagePayload = { embeds: [embed] };
+      if (opts.content) payload.content = opts.content;
+      if (opts.reply) payload.message_reference = { message_id: opts.reply };
+
+      const msg = await api.sendMessage(ch.id, payload);
+      if (fmt !== 'table') {
+        printResult(msg, fmt);
+      } else {
+        console.log(`Sent embed to #${ch.name} (${msg.id})`);
       }
     });
 
@@ -58,6 +127,12 @@ export function registerMessage(program: Command): void {
         const pinned = msg.pinned ? ' 📌' : '';
         console.log(`  ${msg.author.username}${bot} — ${time}${edited}${pinned}`);
         if (msg.content) console.log(`    ${msg.content}`);
+        if (msg.embeds && msg.embeds.length > 0) {
+          for (const e of msg.embeds) {
+            if (e.title) console.log(`    [Embed] ${e.title}`);
+            if (e.description) console.log(`    ${e.description.slice(0, 100)}`);
+          }
+        }
         console.log();
       }
     });
@@ -74,7 +149,7 @@ export function registerMessage(program: Command): void {
       const guildId = requireServer(program.opts().server);
       const ch = await resolveChannel(api, guildId, channelName);
 
-      const msg = await api.editMessage(ch.id, messageId, text);
+      const msg = await api.editMessage(ch.id, messageId, { content: text });
       if (fmt !== 'table') {
         printResult(msg, fmt);
       } else {
@@ -100,6 +175,36 @@ export function registerMessage(program: Command): void {
 
       await api.deleteMessage(ch.id, messageId);
       console.log(`Deleted message ${messageId} from #${ch.name}`);
+    });
+
+  message
+    .command('react')
+    .description('Add a reaction to a message')
+    .argument('<channel>', 'Channel name or ID')
+    .argument('<message-id>', 'Message ID')
+    .argument('<emoji>', 'Emoji to react with (e.g. 👍 or :thumbsup:)')
+    .action(async (channelName: string, messageId: string, emoji: string) => {
+      const api = new DiscordAPI(requireToken());
+      const guildId = requireServer(program.opts().server);
+      const ch = await resolveChannel(api, guildId, channelName);
+
+      await api.addReaction(ch.id, messageId, emoji);
+      console.log(`Reacted ${emoji} on message ${messageId} in #${ch.name}`);
+    });
+
+  message
+    .command('unreact')
+    .description('Remove bot reaction from a message')
+    .argument('<channel>', 'Channel name or ID')
+    .argument('<message-id>', 'Message ID')
+    .argument('<emoji>', 'Emoji to remove')
+    .action(async (channelName: string, messageId: string, emoji: string) => {
+      const api = new DiscordAPI(requireToken());
+      const guildId = requireServer(program.opts().server);
+      const ch = await resolveChannel(api, guildId, channelName);
+
+      await api.removeReaction(ch.id, messageId, emoji);
+      console.log(`Removed ${emoji} reaction from message ${messageId}`);
     });
 
   message
@@ -160,6 +265,26 @@ export function registerMessage(program: Command): void {
         if (msg.content) console.log(`    ${msg.content}`);
         console.log(`    ID: ${msg.id}`);
         console.log();
+      }
+    });
+
+  message
+    .command('thread')
+    .description('Create a thread from a message or in a channel')
+    .argument('<channel>', 'Channel name or ID')
+    .argument('<name>', 'Thread name')
+    .option('--message <id>', 'Create thread from this message ID')
+    .action(async (channelName: string, name: string, opts) => {
+      const fmt = resolveFormat(program.opts().format);
+      const api = new DiscordAPI(requireToken());
+      const guildId = requireServer(program.opts().server);
+      const ch = await resolveChannel(api, guildId, channelName);
+
+      const thread = await api.createThread(ch.id, name, opts.message);
+      if (fmt !== 'table') {
+        printResult(thread, fmt);
+      } else {
+        console.log(`Created thread "${name}" in #${ch.name} (${thread.id})`);
       }
     });
 }
