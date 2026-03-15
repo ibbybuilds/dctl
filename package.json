@@ -32,7 +32,8 @@
   "author": "ibbybuilds",
   "license": "MIT",
   "dependencies": {
-    "commander": "^13.1.0"
+    "commander": "^13.1.0",
+    "yaml": "^2.8.2"
   },
   "engines": {
     "node": ">=18.0.0"

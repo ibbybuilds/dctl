@@ -1,12 +1,20 @@
+import { stringify as yamlStringify } from 'yaml';
+
 export function resolveFormat(explicit: string): string {
   if (explicit !== 'auto') return explicit;
-  return process.stdout.isTTY ? 'table' : 'json';
+  return process.stdout.isTTY ? 'table' : 'yaml';
 }
 
 export function printResult(data: unknown, format: string): void {
   const fmt = resolveFormat(format);
+
   if (fmt === 'json') {
     console.log(JSON.stringify(data, null, 2));
+    return;
+  }
+
+  if (fmt === 'yaml') {
+    console.log(yamlStringify(data, { indent: 2 }).trimEnd());
     return;
   }
 
