@@ -8,8 +8,11 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Only run if the tag was pushed by the repo owner
+    if: github.actor == 'ibbybuilds'
     permissions:
       contents: write
+    environment: npm
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
