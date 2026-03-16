@@ -1,6 +1,6 @@
 {
   "name": "@ibbybuilds/discli",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "discli — Discord server management CLI. Control your servers from the terminal. Built for humans and AI agents.",
   "type": "module",
   "bin": {
