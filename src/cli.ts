@@ -1,3 +1,4 @@
+import { createRequire } from 'module';
 import { Command } from 'commander';
 import { registerInit } from './commands/init.js';
 import { registerServer } from './commands/server.js';
@@ -9,12 +10,15 @@ import { registerMessage } from './commands/message.js';
 import { registerAudit } from './commands/audit.js';
 import { registerInvite } from './commands/invite.js';
 
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json');
+
 const program = new Command();
 
 program
   .name('discli')
   .description('discli — Discord server management CLI')
-  .version('0.5.0')
+  .version(version)
   .option('--format <fmt>', 'Output format: json, yaml, table, auto (auto = yaml when piped, table in terminal)', 'auto')
   .option('--server <id>', 'Server ID override');
 
